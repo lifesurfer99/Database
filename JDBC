@@ -1,0 +1,242 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+import java.util.Scanner;
+
+public class JDBC_Practice {
+	private static final String DB_DRIVER = "org.postgresql.Driver"; // DB 드라이버 이름 선언 
+	private static final String DB_CONNECTION_URL = "jdbc:postgresql://127.0.0.1/JDBCDB"; // 본인 local host 주소, DB 이름 등을 선언
+	private static final String DB_USER = "postgres"; // 이름 선언
+	//private static final String DB_PASSWORD = "1234"; // DB 비밀번호(학번) 선언
+	public static void main(String args[]) throws ClassNotFoundException {
+		
+		
+		// DB 드라이버 연결
+		Class.forName(DB_DRIVER);
+		Properties connProps = new Properties();
+		
+        // 변수들 선언
+		
+		String createTableSQL = null;
+		Statement st = null;
+ 
+		
+		
+		// connProps.setProperty("password", DB_PASSWORD); // user 비밀번호 설정
+		
+		try { // Connection 줄에 생기는 error를 찾아주는 함수, error 발생 시 프로그램이 죽지 않고 대신 error 메시지를 출력함
+		
+			
+//			String CreateSchemaSQL = "create schema jdbc_schema"; // 새로운 schema를 생성하는 SQL 문
+//			st.executeUpdate(CreateSchemaSQL); // 위의 정의한 SQL 문구를 실행
+//			
+			//String showTableSQL = "select * from pg.tables where table_schema='public'";
+			//String showTableSQL = "select tablename from pg_tables where schemaname='public'";
+			
+			// Connection 정보를 설정
+			connProps.setProperty("user", DB_USER); // user 이름 설정
+			
+			Scanner scan = new Scanner(System.in);
+			
+			System.out.print("PASSWORD: ");
+			String DB_PASSWORD = scan.nextLine();
+			connProps.setProperty("user", DB_USER); 
+			connProps.setProperty("password", DB_PASSWORD);
+			
+			Connection conn = DriverManager.getConnection(DB_CONNECTION_URL, connProps);
+			st = conn.createStatement(); // 주료 사용할 statement 변량, 이 변량으로 원하는 SQL 문을 실행함
+			
+			System.out.println("Connection Successful");
+			
+			
+		
+			while(true) {
+				
+				System.out.print("Please input the instruction number(1: Show Tables, 2. Create Table, 3: Select, 4: Insert, 5: Delete, 6: Update, 7: Drop Table,  8: Exit) : ");
+				int number = scan.nextInt();
+				
+				scan.nextLine();
+				
+				// 1. Show Tables
+				if(number==1){
+					ResultSet rs = st.executeQuery("select tablename from pg_tables where schemaname='public'");
+					
+					System.out.println("===============");
+					System.out.println("Table List");
+					System.out.println("===============");	
+					while(rs.next()) {
+						System.out.print(rs.getString(1));
+						System.out.println();
+					}	
+					break;
+				}
+				
+				// 2. Create Table
+				else if(number==2) {
+					// Create Table name
+					System.out.print("Please specify the table name : ");
+					String TN = scan.nextLine(); 
+		
+					createTableSQL = "create table \"" + TN + "\" ( " ;
+					
+					while(true) {
+						System.out.println(createTableSQL);
+						// create column name
+						System.out.print("Please specify columns which you want to insert (Press enter : finish) : ");
+						String CN = scan.nextLine();
+						
+						if(CN.length()==0) {
+							createTableSQL = createTableSQL + " );";
+							createTableSQL = createTableSQL.replace(" , ","");
+							System.out.println(createTableSQL);
+							st.executeUpdate(createTableSQL);
+							break;
+						}
+						else {
+							createTableSQL = createTableSQL + CN + " "; 
+							System.out.println(createTableSQL);
+							
+							// create column type
+							System.out.print("Please specify the column type : ");
+							String CT = scan.nextLine();
+							createTableSQL = createTableSQL + CT + " ";
+							System.out.println(createTableSQL);
+					
+							// create primary type 
+							System.out.println("Please specify the condition (1: primary key, 2: : skip) : ");		
+							int PR = scan.nextInt();
+							if(PR == 1) {
+								createTableSQL = createTableSQL + "primary key" + " ";
+								System.out.println(createTableSQL);
+							}
+							
+							
+							scan.nextLine();
+							
+							// create null type
+							System.out.println("Please specify the condition (1: not null, 2: : skip) : ");		
+							int NL = scan.nextInt();
+							if(NL == 1) {
+								createTableSQL = createTableSQL + "not null" + " ,";
+							}
+							else {
+								createTableSQL = createTableSQL + " ,";
+							}
+							scan.nextLine();
+							//System.out.print(createTableSQL);
+			                //st.executeUpdate(createTableSQL);
+							
+							continue;
+						}
+					}
+			   		
+			}
+			// 1. Show Tables
+			
+				
+			
+//			// 새로운 table을 생성하는 SQL 문
+//			String createTableSQL = "create table jdbc_schema.jdbc_table" +
+//			                        "(num integer primary key not null, " +
+//					                "name varchar(45), " +
+//			                        "studentID integer, " +
+//					                "address varchar(45), " +
+//			                        "phone varchar(45))";
+//			st.executeUpdate(createTableSQL); // 위의 정의한 SQL 구문 실행 
+			
+			//st.executeUpdate(showTableSQL);
+			// 새로운 insert 하는 SQL 문(방법1)
+//			String InsertSQL_1 = "insert into jdbc_schema.jdbc_table values(0, '홍길동', 01, '서대문구', '010-0000-0000')"; 
+//			st.executeUpdate(InsertSQL_1); // 위의 정의한 SQL 문구를 실행 
+//	
+//			
+//			// 새로운 insert 하는 SQL 문(방법2)
+//			String InsertSQL_2 = "insert into jdbc_schema.jdbc_table ( num,name, \"studentid\", address, phone) values (?, ?, ?, ?, ?)";
+			//PreparedStatement preparedStmt;
+			// preparedStmt = conn.prepareStatement(InsertSQL_2);
+			
+//			// 위의 양식에 따라 해당 값을 set하는 과정
+//			preparedStmt.setInt(1,  1);
+//			preparedStmt.setString(2, "이철수");
+//			preparedStmt.setInt(3,  2);
+//			preparedStmt.setString(4,  "서대문구");
+//			preparedStmt.setString(5, "010-1111-1111");
+//			preparedStmt.execute();
+//;
+//			
+//			preparedStmt.setInt(1,  2);
+//			preparedStmt.setString(2, "박영희");
+//			preparedStmt.setInt(3,  3);
+//			preparedStmt.setString(4,  "서대문구");
+//			preparedStmt.setString(5, "010-2222-2222");
+//			preparedStmt.execute();
+			
+			// 결과를 출력하는 방법
+			//ResultSet rs = st.executeQuery("select num, name, studentid, address, phone from jdbc_schema.jdbc_table");
+			
+//			System.out.println("=============== Result ===============");
+//			while(rs.next()) {
+//				System.out.print("Num : " + rs.getString(1) + ", ");
+//				System.out.print("Name : " + rs.getString("name") + ", ");
+//				System.out.print("StudentID : " + rs.getString("studentid") + ", ");
+//				System.out.print("Address : " + rs.getString(4) + ", ");
+//				System.out.print("Phone : " + rs.getString(5) + ", ");
+//				System.out.println();
+//			}
+//			
+//			// 방법2로 update 하는 SQL 문구를 생성
+		//String UpdateSQL = "update jdbc_schema.jdbc_table set \"studentid\" = ? where num = ?";
+//			
+//			// 구체적인 update 값을 set
+		//preparedStmt = conn.prepareStatement(UpdateSQL);
+//			preparedStmt.setInt(1,  04);
+//			preparedStmt.setInt(2, 2);
+//			preparedStmt.executeUpdate(); // update 문구 실행
+////			
+//			rs = st.executeQuery("select num, name, studentid, address, phone from jdbc_schema.jdbc_table");
+//			System.out.println("=============== Result ===============");
+//			while(rs.next()) {
+//				System.out.print("Num : " + rs.getString(1) + ", ");
+//				System.out.print("Name : " + rs.getString("name") + ", ");
+//				System.out.print("StudentID : " + rs.getString("studentid") + ", ");
+//				System.out.print("Address : " + rs.getString(4) + ", ");
+//				System.out.print("Phone : " + rs.getString(5) + ", ");
+//				System.out.println();
+//			}
+//			
+//			// 쉬운 방법으로 하는  SQL 문구를 생성
+//			String DeleteSQL = "delete from jdbc_schema.jdbc_table where num = 2";
+//			st.executeUpdate(DeleteSQL); // delete 문구를 실행 
+//			
+//			// 한번 rs를 끝까지 사용 시, offset가 제일 마지막으로 이동하므로, 다시 rs을 선언해주어, offset을 제일 처음으로 이동하게 해야 함
+//			rs = st.executeQuery("select num, name, studentid, address, phone from jdbc_schema.jdbc_table");
+//			System.out.println("=============== Result ===============");
+//			while(rs.next()) {
+//				System.out.print("Num : " + rs.getString(1) + ", ");
+//				System.out.print("Name : " + rs.getString("name") + ", ");
+//				System.out.print("StudentID : " + rs.getString("studentid") + ", ");
+//				System.out.print("Address : " + rs.getString(4) + ", ");
+//				System.out.print("Phone : " + rs.getString(5) + ", ");
+//				System.out.println();
+//			}
+			
+//			// table을 삭제(drop)하는 SQL 문구를 생성
+//			String DropTableSQL = "drop table jdbc_schema.jdbc_table";
+//			st.executeUpdate(DropTableSQL); // drop 문구를 실행 
+			
+		    // JDBC 연결 끊기
+		    //preparedStmt.close();
+		    st.close();
+		    //rs.close();
+			}  
+		}catch(SQLException sqlEX) { //error 발생시 error를 잡아주는 method
+			System.out.println(sqlEX);
+		}
+		//
+
+	}
+}
